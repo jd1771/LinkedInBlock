@@ -2,19 +2,81 @@ body {
     width: 300px;
     min-height: 200px;
     margin: 0;
+    padding: 0;
+    font-family: "Inter", sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #333;
+    background-color: #fff;
+}
+
+.container {
     padding: 16px;
-    box-sizing: border-box;
-    font-family: Arial, sans-serif;
 }
 
 h1 {
-    font-size: 18px;
-    margin-top: 0;
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 16px;
+    text-align: center;
+    color: #1a1a1a;
 }
 
 #title {
-    color: black;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+}
+
+.empty-state {
+    color: #999;
     text-align: center;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 8px;
+    font-style: italic;
+    margin: 24px 0;
+    font-size: 18px;
+}
+
+.company-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.company-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+}
+
+.company-link {
+    color: #0077b5;
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.company-link:hover {
+    text-decoration: underline;
+}
+
+.unblock-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: #666;
+    transition: color 0.3s ease;
+}
+
+.unblock-btn:hover {
+    color: #e74c3c;
+}
+
+.x-icon {
+    width: 20px;
+    height: 20px;
 }
