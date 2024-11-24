@@ -2,8 +2,11 @@
 
 A Chrome extension that helps you declutter your LinkedIn job search by allowing you to block specific companies from appearing in your job posting lists.
 
-![Example of spammy job postings](./images/spam-example.png)
 _Example: Multiple identical job postings from recruiting agencies cluttering search results_
+
+&nbsp;
+
+![Example of spammy job postings](./images/spam-example.png)
 
 ## Features
 
