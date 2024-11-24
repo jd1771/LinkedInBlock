@@ -22,8 +22,6 @@ h1 {
 }
 
 #title {
-    border-bottom: 1px solid #e0e0e0;
-    padding-bottom: 12px;
     margin-bottom: 16px;
 }
 
@@ -31,14 +29,15 @@ h1 {
     color: #999;
     text-align: center;
     font-style: italic;
-    margin: 24px 0;
+    display: none;
+    margin: 16px 0;
     font-size: 18px;
 }
 
 .company-list {
     list-style-type: none;
     padding: 0;
-    margin: 0;
+    margin: 8px 0 0 0;
 }
 
 .company-item {
@@ -47,12 +46,17 @@ h1 {
     align-items: center;
     background-color: #f5f5f5;
     border-radius: 8px;
+    overflow: hidden;
     padding: 12px;
     margin-bottom: 8px;
 }
 
 .company-link {
     color: #0077b5;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
     text-decoration: none;
     font-size: 18px;
     font-weight: 600;
@@ -66,6 +70,7 @@ h1 {
     background: none;
     border: none;
     cursor: pointer;
+    flex-shrink: 0;
     padding: 4px;
     color: #666;
     transition: color 0.3s ease;
@@ -78,4 +83,11 @@ h1 {
 .x-icon {
     width: 20px;
     height: 20px;
+}
+
+.section-header {
+    font-size: 14px;
+    color: #333;
+    margin: 12px 0 8px 0;
+    font-weight: 500;
 }
