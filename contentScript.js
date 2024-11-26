@@ -42,8 +42,16 @@ function addBlockButtons() {
     `;
 
     blockButton.addEventListener("click", () => {
-        console.log(`Blocking company: ${companyName}`);
-        console.log(`Company URL: ${companyLink}`);
+        // Get fresh company info at time of click
+        const currentCompanyElement = document.querySelector(
+            ".job-details-jobs-unified-top-card__company-name"
+        );
+        const currentCompanyLink =
+            currentCompanyElement?.querySelector("a")?.href;
+        const currentCompanyName = currentCompanyElement?.textContent?.trim();
+
+        console.log(`Blocking company: ${currentCompanyName}`);
+        console.log(`Company URL: ${currentCompanyLink}`);
         // TODO: Add storage logic for blocked company
     });
 
@@ -56,6 +64,22 @@ function addBlockButtons() {
         shareContainer.nextSibling
     );
 }
+
+// Watch for URL changes since LinkedIn is a SPA
+let lastUrl = location.href;
+new MutationObserver(() => {
+    const url = location.href;
+    if (url !== lastUrl) {
+        lastUrl = url;
+        // Remove existing block button if present
+        const existingButton = document.querySelector(".company-block-btn");
+        if (existingButton) {
+            existingButton.closest(".artdeco-dropdown").remove();
+        }
+        // Add new block button
+        setTimeout(addBlockButtons, 500); // Small delay to ensure DOM is ready
+    }
+}).observe(document, { subtree: true, childList: true });
 
 // Initial run
 addBlockButtons();
