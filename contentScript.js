@@ -72,7 +72,30 @@ function addBlockButtons() {
 
         console.log(`Blocking company: ${currentCompanyName}`);
         console.log(`Company URL: ${currentCompanyLink}`);
-        // TODO: Add storage logic for blocked company
+
+        // Add company to blocked list in storage
+        if (currentCompanyName && currentCompanyLink) {
+            chrome.storage.sync.get(["blockedCompanies"], (result) => {
+                const blockedCompanies = result.blockedCompanies || [];
+                const newBlockedCompany = {
+                    name: currentCompanyName,
+                    url: currentCompanyLink,
+                    dateBlocked: new Date().toISOString(),
+                };
+
+                // Only add if not already blocked
+                const alreadyExists = blockedCompanies.some(
+                    (company) => company.url === currentCompanyLink
+                );
+                if (!alreadyExists) {
+                    blockedCompanies.push(newBlockedCompany);
+                    chrome.storage.sync.set({ blockedCompanies }, () => {
+                        console.log("Company blocked successfully");
+                        blockButton.disabled = true;
+                    });
+                }
+            });
+        }
     });
 
     // Add button to its container
