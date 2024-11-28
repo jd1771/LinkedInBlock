@@ -1,5 +1,34 @@
 console.log("LinkedIn Jobs Blocker: Content script loaded");
 
+// CSS Classes
+const BUTTON_CLASSES = [
+    "company-block-btn",
+    "artdeco-button",
+    "artdeco-button--3",
+    "artdeco-button--tertiary",
+    "artdeco-button--circle",
+    "artdeco-button--muted",
+].join(" ");
+
+const CONTAINER_CLASS =
+    "artdeco-dropdown artdeco-dropdown--placement-bottom artdeco-dropdown--justification-right";
+
+// HTML Template
+const BLOCK_BUTTON_SVG = `
+    <svg role="none" 
+         aria-hidden="true" 
+         class="artdeco-button__icon" 
+         xmlns="http://www.w3.org/2000/svg" 
+         width="18" 
+         height="18" 
+         viewBox="0 0 16 16" 
+         fill="currentColor">
+        <path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 14.5a6.5 6.5 0 110-13 6.5 6.5 0 010 13z"/>
+        <path d="M3 8h10v1H3z"/>
+    </svg>
+    <span class="artdeco-button__text">Block</span>
+`;
+
 function addBlockButtons() {
     // Find the job details container
     const container = document.querySelector(
@@ -22,24 +51,15 @@ function addBlockButtons() {
 
     // Create block button container
     const blockContainer = document.createElement("div");
-    blockContainer.className =
-        "artdeco-dropdown artdeco-dropdown--placement-bottom artdeco-dropdown--justification-right";
+    blockContainer.className = CONTAINER_CLASS;
 
     // Create block button
     const blockButton = document.createElement("button");
-    blockButton.className =
-        "company-block-btn artdeco-button artdeco-button--3 artdeco-button--tertiary artdeco-button--circle artdeco-button--muted";
+    blockButton.className = BUTTON_CLASSES;
     blockButton.setAttribute("aria-label", "Block Company");
     blockButton.setAttribute("type", "button");
     blockButton.setAttribute("tabindex", "0");
-
-    blockButton.innerHTML = `
-        <svg role="none" aria-hidden="true" class="artdeco-button__icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 14.5a6.5 6.5 0 110-13 6.5 6.5 0 010 13z"/>
-            <path d="M3 8h10v1H3z"/>
-        </svg>
-        <span class="artdeco-button__text">Block</span>
-    `;
+    blockButton.innerHTML = BLOCK_BUTTON_SVG;
 
     blockButton.addEventListener("click", () => {
         // Get fresh company info at time of click
