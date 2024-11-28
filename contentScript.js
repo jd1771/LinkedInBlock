@@ -108,21 +108,37 @@ function addBlockButtons() {
     );
 }
 
-// Watch for URL changes since LinkedIn is a SPA
+// Watch for URL changes and content updates since LinkedIn is a SPA
 let lastUrl = location.href;
-new MutationObserver(() => {
+const observer = new MutationObserver(() => {
     const url = location.href;
     if (url !== lastUrl) {
         lastUrl = url;
         // Remove existing block button if present
         const existingButton = document.querySelector(".company-block-btn");
         if (existingButton) {
-            existingButton.closest(".artdeco-dropdown").remove();
+            existingButton.closest(".artdeco-dropdown")?.remove();
         }
         // Add new block button
-        setTimeout(addBlockButtons, 500); // Small delay to ensure DOM is ready
+        setTimeout(addBlockButtons, 500);
+    } else {
+        // Check if button needs to be added even without URL change
+        const container = document.querySelector(
+            ".job-details-jobs-unified-top-card__container--two-pane"
+        );
+        const existingButton = document.querySelector(".company-block-btn");
+        if (container && !existingButton) {
+            setTimeout(addBlockButtons, 500);
+        }
     }
-}).observe(document, { subtree: true, childList: true });
+});
+
+// Observe both DOM changes and subtree
+observer.observe(document, {
+    subtree: true,
+    childList: true,
+    characterData: true,
+});
 
 // Initial run
-addBlockButtons();
+setTimeout(addBlockButtons, 1000); // Increased initial delay
