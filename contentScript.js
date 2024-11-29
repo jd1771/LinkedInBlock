@@ -108,37 +108,25 @@ function addBlockButtons() {
     );
 }
 
-// Watch for URL changes and content updates since LinkedIn is a SPA
-let lastUrl = location.href;
-const observer = new MutationObserver(() => {
-    const url = location.href;
-    if (url !== lastUrl) {
-        lastUrl = url;
-        // Remove existing block button if present
-        const existingButton = document.querySelector(".company-block-btn");
-        if (existingButton) {
-            existingButton.closest(".artdeco-dropdown")?.remove();
-        }
-        // Add new block button
-        setTimeout(addBlockButtons, 500);
-    } else {
-        // Check if button needs to be added even without URL change
+// Create a MutationObserver to watch for changes in the DOM
+const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+        // Check if the job details container is added to the DOM
         const container = document.querySelector(
             ".job-details-jobs-unified-top-card__container--two-pane"
         );
-        const existingButton = document.querySelector(".company-block-btn");
-        if (container && !existingButton) {
-            setTimeout(addBlockButtons, 500);
+        if (container) {
+            addBlockButtons(); // Call the function to add the button
+            observer.disconnect(); // Stop observing once the button is added
         }
-    }
+    });
 });
 
-// Observe both DOM changes and subtree
-observer.observe(document, {
-    subtree: true,
+// Start observing the document for changes
+observer.observe(document.body, {
     childList: true,
-    characterData: true,
+    subtree: true,
 });
 
-// Initial run
-setTimeout(addBlockButtons, 1000); // Increased initial delay
+// Optionally, you can also call addBlockButtons initially
+setTimeout(addBlockButtons, 1000); // Fallback in case the observer doesn't catch it
