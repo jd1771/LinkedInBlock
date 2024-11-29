@@ -29,6 +29,9 @@ const BLOCK_BUTTON_SVG = `
     <span class="artdeco-button__text">Block</span>
 `;
 
+function removeBlockedListings() {
+    // Grad listings data-occludable-job-id="4079656631"
+}
 function addBlockButtons() {
     // Find the job details container
     const container = document.querySelector(
@@ -75,26 +78,22 @@ function addBlockButtons() {
         console.log(`Blocking company: ${currentCompanyName}`);
         console.log(`Company URL: ${currentCompanyLink}`);
 
-        // Add company to blocked list in storage
         if (currentCompanyName && currentCompanyLink) {
-            chrome.storage.sync.get(["blockedCompanies"], (result) => {
-                const blockedCompanies = result.blockedCompanies || [];
-                const newBlockedCompany = {
-                    name: currentCompanyName,
-                    url: currentCompanyLink,
-                    dateBlocked: new Date().toISOString(),
-                };
+            const dataToStore = {
+                [currentCompanyName]: [
+                    currentCompanyLink,
+                    new Date().toISOString(),
+                ],
+            };
 
-                // Only add if not already blocked
-                const alreadyExists = blockedCompanies.some(
-                    (company) => company.url === currentCompanyLink
-                );
-                if (!alreadyExists) {
-                    blockedCompanies.push(newBlockedCompany);
-                    chrome.storage.sync.set({ blockedCompanies }, () => {
-                        console.log("Company blocked successfully");
-                        blockButton.disabled = true;
-                    });
+            chrome.storage.sync.set(dataToStore, () => {
+                if (chrome.runtime.lastError) {
+                    console.error(
+                        "Error storing data:",
+                        chrome.runtime.lastError
+                    );
+                } else {
+                    console.log("Data successfully saved.");
                 }
             });
         }
