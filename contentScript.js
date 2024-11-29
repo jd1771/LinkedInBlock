@@ -34,6 +34,8 @@ function addBlockButtons() {
     const container = document.querySelector(
         ".job-details-jobs-unified-top-card__container--two-pane"
     );
+
+    // If no container or button already exists, return
     if (!container || container.querySelector(".company-block-btn")) return;
 
     // Find the share button's parent div to position our block button
@@ -108,25 +110,21 @@ function addBlockButtons() {
     );
 }
 
-// Create a MutationObserver to watch for changes in the DOM
+// Create a MutationObserver to continuously watch for changes in the DOM
 const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-        // Check if the job details container is added to the DOM
-        const container = document.querySelector(
-            ".job-details-jobs-unified-top-card__container--two-pane"
-        );
-        if (container) {
-            addBlockButtons(); // Call the function to add the button
-            observer.disconnect(); // Stop observing once the button is added
-        }
-    });
+    // Check if the job details container is present
+    const container = document.querySelector(
+        ".job-details-jobs-unified-top-card__container--two-pane"
+    );
+
+    if (container) {
+        // Try to add block buttons
+        addBlockButtons();
+    }
 });
 
-// Start observing the document for changes
+// Start observing the document for changes continuously
 observer.observe(document.body, {
     childList: true,
     subtree: true,
 });
-
-// Optionally, you can also call addBlockButtons initially
-setTimeout(addBlockButtons, 1000); // Fallback in case the observer doesn't catch it
