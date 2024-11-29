@@ -30,8 +30,21 @@ const BLOCK_BUTTON_SVG = `
 `;
 
 function removeBlockedListings() {
-    // Grad listings data-occludable-job-id="4079656631"
+    // Grab all job listings
+    const jobListings = document.querySelectorAll("[data-occludable-job-id]");
+    jobListings.forEach((listing) => {
+        // Get the child div artdeco-entity-lockup__subtitle
+        const companyElement = listing.querySelector(
+            ".artdeco-entity-lockup__subtitle"
+        );
+        if (companyElement) {
+            // Get the inner text (company name)
+            const companyName = companyElement.textContent?.trim();
+            console.log(companyName);
+        }
+    });
 }
+
 function addBlockButtons() {
     // Find the job details container
     const container = document.querySelector(
@@ -118,6 +131,7 @@ const observer = new MutationObserver((mutations) => {
 
     if (container) {
         // Try to add block buttons
+        removeBlockedListings();
         addBlockButtons();
     }
 });
