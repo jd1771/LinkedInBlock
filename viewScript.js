@@ -31,6 +31,30 @@ function populateBlockedListings() {
                     </button>
                 `;
 
+                    // Add event listener to the unblock button
+                    const unblockButton =
+                        listItem.querySelector(".unblock-btn");
+                    unblockButton.addEventListener("click", () => {
+                        chrome.storage.sync.remove(companyName, () => {
+                            if (chrome.runtime.lastError) {
+                                console.error(
+                                    "Error unblocking company:",
+                                    chrome.runtime.lastError
+                                );
+                            } else {
+                                console.log(
+                                    `${companyName} successfully unblocked.`
+                                );
+                                listItem.remove(); // Remove the item from the UI
+
+                                // Check if there are no remaining items
+                                if (!companyList.children.length) {
+                                    emptyState.style.display = "block";
+                                }
+                            }
+                        });
+                    });
+
                     companyList.appendChild(listItem);
                 }
             );
@@ -38,4 +62,5 @@ function populateBlockedListings() {
     });
 }
 
+// Populate the list on page load
 populateBlockedListings();
