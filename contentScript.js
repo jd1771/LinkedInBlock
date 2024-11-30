@@ -40,7 +40,13 @@ function removeBlockedListings() {
         if (companyElement) {
             // Get the inner text (company name)
             const companyName = companyElement.textContent?.trim();
-            console.log(companyName);
+
+            chrome.storage.sync.get(companyName, (result) => {
+                if (Object.keys(result).length > 0) {
+                    console.log(`Blocking job from: ${companyName}`);
+                    listing.style.display = "none";
+                }
+            });
         }
     });
 }
