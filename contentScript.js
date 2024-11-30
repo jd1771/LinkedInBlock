@@ -29,6 +29,9 @@ const BLOCK_BUTTON_SVG = `
     <span class="artdeco-button__text">Block</span>
 `;
 
+/**
+ * Removes blocked company listings from the view.
+ */
 function removeBlockedListings() {
     // Grab all job listings
     const jobListings = document.querySelectorAll("[data-occludable-job-id]");
@@ -51,6 +54,9 @@ function removeBlockedListings() {
     });
 }
 
+/**
+ * Creates and adds block buttons to the DOM.
+ */
 function addBlockButtons() {
     // Find the job details container
     const container = document.querySelector(

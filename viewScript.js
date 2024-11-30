@@ -1,3 +1,6 @@
+/**
+ * Populates the blocked companies list with the companies stored in the Chrome storage.
+ */
 function populateBlockedListings() {
     chrome.storage.sync.get(null, (items) => {
         const blockedCompanies = Object.entries(items); // Converts the stored object to an array of [key, value] pairs
