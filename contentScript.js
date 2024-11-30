@@ -112,6 +112,7 @@ function addBlockButtons() {
                         chrome.runtime.lastError
                     );
                 } else {
+                    removeBlockedListings();
                     console.log("Data successfully saved.");
                 }
             });
