@@ -33,14 +33,19 @@ const BLOCK_BUTTON_SVG = `
  * Removes blocked company listings from the view.
  */
 function removeBlockedListings() {
+
     // Grab all job listings
     const jobListings = document.querySelectorAll("[data-occludable-job-id]");
+
     jobListings.forEach((listing) => {
+        
         // Get the child div artdeco-entity-lockup__subtitle
         const companyElement = listing.querySelector(
             ".artdeco-entity-lockup__subtitle"
         );
+
         if (companyElement) {
+            
             // Get the inner text (company name)
             const companyName = companyElement.textContent?.trim();
 
@@ -58,22 +63,21 @@ function removeBlockedListings() {
  * Creates and adds block buttons to the DOM.
  */
 function addBlockButtons() {
+    
     // Find the job details container
-    const container = document.querySelector(
-        ".job-details-jobs-unified-top-card__container--two-pane"
-    );
+    const container = document.querySelector(".job-details-jobs-unified-top-card__container--two-pane");
 
     // If no container or button already exists, return
     if (!container || container.querySelector(".company-block-btn")) return;
 
     // Find the share button's parent div to position our block button
     const shareContainer = container.querySelector(".artdeco-dropdown");
+    
     if (!shareContainer) return;
 
     // Get company info
-    const companyElement = container.querySelector(
-        ".job-details-jobs-unified-top-card__company-name"
-    );
+    const companyElement = container.querySelector(".job-details-jobs-unified-top-card__company-name");
+
     if (!companyElement) return;
 
     const companyLink = companyElement.querySelector("a")?.href;
@@ -92,13 +96,12 @@ function addBlockButtons() {
     blockButton.innerHTML = BLOCK_BUTTON_SVG;
 
     blockButton.addEventListener("click", () => {
+
         // Get fresh company info at time of click
-        const currentCompanyElement = document.querySelector(
-            ".job-details-jobs-unified-top-card__company-name"
-        );
-        const currentCompanyLink =
-            currentCompanyElement?.querySelector("a")?.href;
-        const currentCompanyName = currentCompanyElement?.textContent?.trim();
+        const currentCompanyElement = document.querySelector(".job-details-jobs-unified-top-card__company-name");
+        const currentCompanyLink    = currentCompanyElement?.querySelector("a")?.href;
+        const currentCompanyName    = currentCompanyElement?.textContent?.trim();
+
 
         console.log(`Blocking company: ${currentCompanyName}`);
         console.log(`Company URL: ${currentCompanyLink}`);
@@ -113,10 +116,7 @@ function addBlockButtons() {
 
             chrome.storage.sync.set(dataToStore, () => {
                 if (chrome.runtime.lastError) {
-                    console.error(
-                        "Error storing data:",
-                        chrome.runtime.lastError
-                    );
+                    console.error("Error storing data:", chrome.runtime.lastError);
                 } else {
                     removeBlockedListings();
                     console.log("Data successfully saved.");
@@ -129,18 +129,13 @@ function addBlockButtons() {
     blockContainer.appendChild(blockButton);
 
     // Insert after the share button container
-    shareContainer.parentNode.insertBefore(
-        blockContainer,
-        shareContainer.nextSibling
-    );
+    shareContainer.parentNode.insertBefore(blockContainer, shareContainer.nextSibling);
 }
 
 // Create a MutationObserver to continuously watch for changes in the DOM
 const observer = new MutationObserver((mutations) => {
     // Check if the job details container is present
-    const container = document.querySelector(
-        ".job-details-jobs-unified-top-card__container--two-pane"
-    );
+    const container = document.querySelector(".job-details-jobs-unified-top-card__container--two-pane");
 
     if (container) {
         // Try to add block buttons
