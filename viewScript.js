@@ -1,5 +1,8 @@
 /**
  * Populates the blocked companies list with the companies stored in the Chrome storage.
+ * 
+ * Inputs: None
+ * Outputs: None (directly manipulates the DOM and updates storage)
  */
 function populateBlockedListings() {
 

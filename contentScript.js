@@ -31,6 +31,9 @@ const BLOCK_BUTTON_SVG = `
 
 /**
  * Removes blocked company listings from the view.
+ * 
+ * Inputs: None
+ * Outputs: None (directly manipulates the DOM and updates storage)
  */
 function removeBlockedListings() {
 
@@ -61,6 +64,9 @@ function removeBlockedListings() {
 
 /**
  * Creates and adds block buttons to the DOM.
+ * 
+ * Inputs: None
+ * Outputs: None (directly manipulates the DOM and updates storage)
  */
 function addBlockButtons() {
     
