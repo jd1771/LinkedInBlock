@@ -45,7 +45,7 @@ function removeBlockedListings() {
         );
 
         if (companyElement) {
-            
+
             // Get the inner text (company name)
             const companyName = companyElement.textContent?.trim();
 
@@ -79,9 +79,6 @@ function addBlockButtons() {
     const companyElement = container.querySelector(".job-details-jobs-unified-top-card__company-name");
 
     if (!companyElement) return;
-
-    const companyLink = companyElement.querySelector("a")?.href;
-    const companyName = companyElement.textContent?.trim();
 
     // Create block button container
     const blockContainer = document.createElement("div");
