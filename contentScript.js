@@ -29,6 +29,9 @@ const BLOCK_BUTTON_SVG = `
     <span class="artdeco-button__text">Block</span>
 `;
 
+// Blocked companies data structure
+let blockedCompanies = new Set();
+
 /**
  * Removes blocked company listings from the view.
  * 
@@ -52,12 +55,10 @@ function removeBlockedListings() {
             // Get the inner text (company name)
             const companyName = companyElement.textContent?.trim();
 
-            chrome.storage.sync.get(companyName, (result) => {
-                if (Object.keys(result).length > 0) {
-                    console.log(`Blocking job from: ${companyName}`);
-                    listing.style.display = "none";
-                }
-            });
+            if (blockedCompanies.has(companyName)) {
+                console.log(`Blocking job from: ${companyName}`);
+                listing.style.display = "none";
+            }
         }
     });
 }
@@ -121,6 +122,7 @@ function addBlockButtons() {
                 if (chrome.runtime.lastError) {
                     console.error("Error storing data:", chrome.runtime.lastError);
                 } else {
+                    blockedCompanies.add(currentCompanyName);
                     removeBlockedListings();
                     console.log("Data successfully saved.");
                 }
@@ -134,6 +136,19 @@ function addBlockButtons() {
     // Insert after the share button container
     shareContainer.parentNode.insertBefore(blockContainer, shareContainer.nextSibling);
 }
+
+// Load blocked companies from storage
+chrome.storage.sync.get(null, (result) => {
+    if (chrome.runtime.lastError) {
+        console.error("Error loading data from storage:", chrome.runtime.lastError);
+    } else {
+        Object.keys(result).forEach((companyName) => {
+            blockedCompanies.add(companyName);
+        });
+        
+        console.log("Blocked companies loaded from storage:", blockedCompanies);
+    }
+});
 
 // Create a MutationObserver to continuously watch for changes in the DOM
 const observer = new MutationObserver((mutations) => {
