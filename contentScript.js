@@ -150,20 +150,54 @@ chrome.storage.sync.get(null, (result) => {
     }
 });
 
-// Create a MutationObserver to continuously watch for changes in the DOM
-const observer = new MutationObserver((mutations) => {
-    // Check if the job details container is present
-    const container = document.querySelector(".job-details-jobs-unified-top-card__container--two-pane");
+// Wait for the DOM to be ready before setting up the observer
+function initObserver() {
+    // Create the MutationObserver
+    const observer = new MutationObserver((mutations) => {
+        // Select all job listings with the data attribute
+        const jobListings = document.querySelectorAll('[data-occludable-job-id]');
+        
+        jobListings.forEach(jobListing => {
+            // Check if you've already processed this listing
+            if (!jobListing.classList.contains('processed')) {
+                
+                removeBlockedListings();
+                addBlockButtons();
+                
+                // Mark as processed to avoid repeated processing
+                jobListing.classList.add('processed');
+            }
+        });
+    });
 
-    if (container) {
-        // Try to add block buttons
-        removeBlockedListings();
-        addBlockButtons();
+    // Observe the entire body for dynamically loaded content
+    const targetNode = document.body;
+    
+    // Only observe if we have a valid node
+    if (targetNode) {
+        observer.observe(targetNode, {
+            childList: true,
+            subtree: true
+        });
     }
-});
 
-// Start observing the document for changes continuously
-observer.observe(document.body, {
-    childList: true,
-    subtree: true,
-});
+    // Initial run
+    const initialJobListings = document.querySelectorAll('[data-occludable-job-id]');
+    initialJobListings.forEach(jobListing => {
+        if (!jobListing.classList.contains('processed')) {
+            removeBlockedListings();
+            addBlockButtons();
+            jobListing.classList.add('processed');
+        }
+    });
+}
+
+// Use DOMContentLoaded to ensure the DOM is ready
+document.addEventListener('DOMContentLoaded', initObserver);
+
+// Fallback for cases where DOMContentLoaded might not fire
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initObserver);
+} else {
+    initObserver();
+}
