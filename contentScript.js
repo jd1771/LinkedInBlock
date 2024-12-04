@@ -171,32 +171,22 @@ chrome.storage.sync.get(null, (result) => {
 
 // Wait for the DOM to be ready before setting up the observer
 function initObserver() {
-    
-    /// Create the MutationObserver
+    // Create the MutationObserver
     const observer = new MutationObserver((mutations) => {
-        // Check if any mutations affect job listings
-        const hasJobListingChanges = mutations.some(mutation => 
-            Array.from(mutation.addedNodes).some(node => 
-                node.nodeType === Node.ELEMENT_NODE && 
-                node.querySelector('[data-occludable-job-id]')
-            )
-        );
-
-        if (hasJobListingChanges) {
-            // Select all job listings with the data attribute
-            const jobListings = document.querySelectorAll('[data-occludable-job-id]');
-            
-            jobListings.forEach(jobListing => {
-                // Check if you've already processed this listing
-                if (!jobListing.classList.contains('processed')) {
-                    removeBlockedListings();
-                    addBlockButtons();
-                    
-                    // Mark as processed to avoid repeated processing
-                    jobListing.classList.add('processed');
-                }
-            });
-        }
+        // Select all job listings with the data attribute
+        const jobListings = document.querySelectorAll('[data-occludable-job-id]');
+        
+        jobListings.forEach(jobListing => {
+            // Check if you've already processed this listing
+            if (!jobListing.classList.contains('processed')) {
+                
+                removeBlockedListings();
+                addBlockButtons();
+                
+                // Mark as processed to avoid repeated processing
+                jobListing.classList.add('processed');
+            }
+        });
     });
 
     // Observe the entire body for dynamically loaded content
