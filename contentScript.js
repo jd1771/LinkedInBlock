@@ -40,27 +40,33 @@ let blockedCompanies = new Set();
  */
 function removeBlockedListings() {
 
-    // Grab all job listings
-    const jobListings = document.querySelectorAll("[data-occludable-job-id]");
+    try {
+        // Grab all job listings
+        const jobListings = document.querySelectorAll("[data-occludable-job-id]");
 
-    jobListings.forEach((listing) => {
-        
-        // Get the child div artdeco-entity-lockup__subtitle
-        const companyElement = listing.querySelector(
-            ".artdeco-entity-lockup__subtitle"
-        );
+        jobListings.forEach((listing) => {
+            try {
+                // Get the child div artdeco-entity-lockup__subtitle
+                const companyElement = listing.querySelector(
+                    ".artdeco-entity-lockup__subtitle"
+                );
 
-        if (companyElement) {
+                if (companyElement) {
+                    // Get the inner text (company name)
+                    const companyName = companyElement.textContent?.trim();
 
-            // Get the inner text (company name)
-            const companyName = companyElement.textContent?.trim();
-
-            if (blockedCompanies.has(companyName)) {
-                console.log(`Blocking job from: ${companyName}`);
-                listing.style.display = "none";
+                    if (companyName && blockedCompanies.has(companyName)) {
+                        console.log(`Blocking job from: ${companyName}`);
+                        listing.style.display = "none";
+                    }
+                }
+            } catch (listingError) {
+                console.error("Error processing individual listing:", listingError);
             }
-        }
-    });
+        });
+    } catch (error) {
+        console.error("Error in removeBlockedListings:", error);
+    }
 }
 
 /**
@@ -71,82 +77,92 @@ function removeBlockedListings() {
  */
 function addBlockButtons() {
     
-    // Find the job details container
-    const container = document.querySelector(".job-details-jobs-unified-top-card__container--two-pane");
+    try {
+        // Find the job details container
+        const container = document.querySelector(".job-details-jobs-unified-top-card__container--two-pane");
 
-    // If no container or button already exists, return
-    if (!container || container.querySelector(".company-block-btn")) return;
+        // If no container or button already exists, return
+        if (!container || container.querySelector(".company-block-btn")) return;
 
-    // Find the share button's parent div to position our block button
-    const shareContainer = container.querySelector(".artdeco-dropdown");
-    
-    if (!shareContainer) return;
+        // Find the share button's parent div to position our block button
+        const shareContainer = container.querySelector(".artdeco-dropdown");
+        
+        if (!shareContainer) return;
 
-    // Get company info
-    const companyElement = container.querySelector(".job-details-jobs-unified-top-card__company-name");
+        // Get company info
+        const companyElement = container.querySelector(".job-details-jobs-unified-top-card__company-name");
 
-    if (!companyElement) return;
+        if (!companyElement) return;
 
-    // Create block button container
-    const blockContainer = document.createElement("div");
-    blockContainer.className = CONTAINER_CLASS;
+        // Create block button container
+        const blockContainer = document.createElement("div");
+        blockContainer.className = CONTAINER_CLASS;
 
-    // Create block button
-    const blockButton = document.createElement("button");
-    blockButton.className = BUTTON_CLASSES;
-    blockButton.setAttribute("aria-label", "Block Company");
-    blockButton.setAttribute("type", "button");
-    blockButton.setAttribute("tabindex", "0");
-    blockButton.innerHTML = BLOCK_BUTTON_SVG;
+        // Create block button
+        const blockButton = document.createElement("button");
+        blockButton.className = BUTTON_CLASSES;
+        blockButton.setAttribute("aria-label", "Block Company");
+        blockButton.setAttribute("type", "button");
+        blockButton.setAttribute("tabindex", "0");
+        blockButton.innerHTML = BLOCK_BUTTON_SVG;
 
-    blockButton.addEventListener("click", () => {
+        blockButton.addEventListener("click", () => {
+            try {
+                // Get fresh company info at time of click
+                const currentCompanyElement = document.querySelector(".job-details-jobs-unified-top-card__company-name");
+                const currentCompanyLink    = currentCompanyElement?.querySelector("a")?.href;
+                const currentCompanyName    = currentCompanyElement?.textContent?.trim();
 
-        // Get fresh company info at time of click
-        const currentCompanyElement = document.querySelector(".job-details-jobs-unified-top-card__company-name");
-        const currentCompanyLink    = currentCompanyElement?.querySelector("a")?.href;
-        const currentCompanyName    = currentCompanyElement?.textContent?.trim();
+                console.log(`Blocking company: ${currentCompanyName}`);
+                console.log(`Company URL: ${currentCompanyLink}`);
 
+                if (currentCompanyName && currentCompanyLink) {
+                    const dataToStore = {
+                        [currentCompanyName]: [
+                            currentCompanyLink,
+                            new Date().toISOString(),
+                        ],
+                    };
 
-        console.log(`Blocking company: ${currentCompanyName}`);
-        console.log(`Company URL: ${currentCompanyLink}`);
-
-        if (currentCompanyName && currentCompanyLink) {
-            const dataToStore = {
-                [currentCompanyName]: [
-                    currentCompanyLink,
-                    new Date().toISOString(),
-                ],
-            };
-
-            chrome.storage.sync.set(dataToStore, () => {
-                if (chrome.runtime.lastError) {
-                    console.error("Error storing data:", chrome.runtime.lastError);
-                } else {
-                    blockedCompanies.add(currentCompanyName);
-                    removeBlockedListings();
-                    console.log("Data successfully saved.");
+                    chrome.storage.sync.set(dataToStore, () => {
+                        if (chrome.runtime.lastError) {
+                            console.error("Error storing data:", chrome.runtime.lastError);
+                        } else {
+                            blockedCompanies.add(currentCompanyName);
+                            removeBlockedListings();
+                            console.log("Data successfully saved.");
+                        }
+                    });
                 }
-            });
-        }
-    });
+            } catch (clickError) {
+                console.error("Error in block button click handler:", clickError);
+            }
+        });
 
-    // Add button to its container
-    blockContainer.appendChild(blockButton);
+        // Add button to its container
+        blockContainer.appendChild(blockButton);
 
-    // Insert after the share button container
-    shareContainer.parentNode.insertBefore(blockContainer, shareContainer.nextSibling);
+        // Insert after the share button container
+        shareContainer.parentNode.insertBefore(blockContainer, shareContainer.nextSibling);
+    } catch (error) {
+        console.error("Error in addBlockButtons:", error);
+    }
 }
 
 // Load blocked companies from storage
 chrome.storage.sync.get(null, (result) => {
-    if (chrome.runtime.lastError) {
-        console.error("Error loading data from storage:", chrome.runtime.lastError);
-    } else {
-        Object.keys(result).forEach((companyName) => {
-            blockedCompanies.add(companyName);
-        });
-        
-        console.log("Blocked companies loaded from storage:", blockedCompanies);
+    try {
+        if (chrome.runtime.lastError) {
+            console.error("Error loading data from storage:", chrome.runtime.lastError);
+        } else {
+            Object.keys(result).forEach((companyName) => {
+                blockedCompanies.add(companyName);
+            });
+            
+            console.log("Blocked companies loaded from storage:", blockedCompanies);
+        }
+    } catch(error) {
+        console.error("Error processing storage results:", error);
     }
 });
 
