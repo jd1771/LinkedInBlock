@@ -219,6 +219,10 @@ function initObserver() {
             jobListing.classList.add('processed');
         }
     });
+
+    // Disconnect the observer when the page unloads
+    window.addEventListener('beforeunload', () => observer.disconnect());
+
 }
 
 // Use DOMContentLoaded to ensure the DOM is ready
