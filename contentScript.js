@@ -10,8 +10,11 @@ const BUTTON_CLASSES = [
     "artdeco-button--muted",
 ].join(" ");
 
-const CONTAINER_CLASS =
-    "artdeco-dropdown artdeco-dropdown--placement-bottom artdeco-dropdown--justification-right";
+const CONTAINER_CLASS = `
+    artdeco-dropdown 
+    artdeco-dropdown--placement-bottom 
+    artdeco-dropdown--justification-right
+`.trim();
 
 // HTML Template
 const BLOCK_BUTTON_SVG = `
