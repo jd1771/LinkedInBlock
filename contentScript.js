@@ -1,5 +1,3 @@
-console.log("LinkedIn Jobs Blocker: Content script loaded");
-
 // CSS Classes
 const BUTTON_CLASSES = [
     "company-block-btn",
@@ -61,7 +59,6 @@ function removeBlockedListings() {
                     const companyName = companyElement.textContent?.trim();
 
                     if (companyName && blockedCompanies.has(companyName)) {
-                        console.log(`Blocking job from: ${companyName}`);
                         listing.style.display = "none";
                     }
                 }
@@ -120,9 +117,6 @@ function addBlockButtons() {
                 const currentCompanyLink    = currentCompanyElement?.querySelector("a")?.href;
                 const currentCompanyName    = currentCompanyElement?.textContent?.trim();
 
-                console.log(`Blocking company: ${currentCompanyName}`);
-                console.log(`Company URL: ${currentCompanyLink}`);
-
                 if (currentCompanyName && currentCompanyLink) {
                     const dataToStore = {
                         [currentCompanyName]: [
@@ -137,7 +131,6 @@ function addBlockButtons() {
                         } else {
                             blockedCompanies.add(currentCompanyName);
                             removeBlockedListings();
-                            console.log("Data successfully saved.");
                         }
                     });
                 }
@@ -165,8 +158,6 @@ chrome.storage.sync.get(null, (result) => {
             Object.keys(result).forEach((companyName) => {
                 blockedCompanies.add(companyName);
             });
-            
-            console.log("Blocked companies loaded from storage:", blockedCompanies);
         }
     } catch(error) {
         console.error("Error processing storage results:", error);
@@ -182,7 +173,6 @@ function initObserver() {
         // Check if the location has changed
         const currentLocation = window.location.href;
         if (currentLocation !== previousLocation) {
-            console.log("Location changed from", previousLocation, "to", currentLocation);
             previousLocation = currentLocation;
             
             // Reset processed status
