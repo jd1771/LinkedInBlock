@@ -5,13 +5,18 @@
  * Outputs: None (directly manipulates the DOM and updates storage)
  */
 function populateBlockedListings() {
-
+    // Show spinner immediately
+    const spinner = document.querySelector(".spinner");
+    spinner.style.display = "block";
+    
     chrome.storage.sync.get(null, (items) => {
-        
-        const blockedCompanies = Object.entries(items); // Converts the stored object to an array of [key, value] pairs
-        const companyList      = document.querySelector(".company-list");
-        const emptyState       = document.querySelector(".empty-state");
+        const blockedCompanies = Object.entries(items);
+        const companyList = document.querySelector(".company-list");
+        const emptyState = document.querySelector(".empty-state");
 
+        // Hide spinner once data is loaded
+        spinner.style.display = "none";
+        
         // Clear existing list
         companyList.innerHTML = "";
 
@@ -64,5 +69,8 @@ function populateBlockedListings() {
     });
 }
 
-// Populate the list on page load
-populateBlockedListings();
+// Wait for DOM to be fully loaded before running any code
+document.addEventListener('DOMContentLoaded', () => {
+    // Populate the list on page load
+    populateBlockedListings();
+});
