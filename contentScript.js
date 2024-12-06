@@ -215,10 +215,7 @@ function initObserver() {
 
 }
 
-// Use DOMContentLoaded to ensure the DOM is ready
-document.addEventListener('DOMContentLoaded', initObserver);
-
-// Fallback for cases where DOMContentLoaded might not fire
+// Check document readiness and initialize accordingly
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initObserver);
 } else {
