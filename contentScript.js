@@ -42,8 +42,10 @@ let blockedCompanies = new Set();
  * Outputs: None (directly manipulates the DOM and updates storage)
  */
 function removeBlockedListings() {
-
     try {
+        // Only run on jobs pages
+        if (!window.location.href.includes('/jobs/')) return;
+
         // Grab all job listings
         const jobListings = document.querySelectorAll("[data-occludable-job-id]");
 
@@ -79,8 +81,10 @@ function removeBlockedListings() {
  * Outputs: None (directly manipulates the DOM and updates storage)
  */
 function addBlockButtons() {
-    
     try {
+        // Only run on jobs pages
+        if (!window.location.href.includes('/jobs/')) return;
+
         // Find the job details container
         const container = document.querySelector(".job-details-jobs-unified-top-card__container--two-pane");
 
@@ -171,8 +175,24 @@ chrome.storage.sync.get(null, (result) => {
 
 // Wait for the DOM to be ready before setting up the observer
 function initObserver() {
+    let previousLocation = window.location.href;
+
     // Create the MutationObserver
     const observer = new MutationObserver((mutations) => {
+        // Check if the location has changed
+        const currentLocation = window.location.href;
+        if (currentLocation !== previousLocation) {
+            console.log("Location changed from", previousLocation, "to", currentLocation);
+            previousLocation = currentLocation;
+            
+            // Reset processed status
+            const processedListings = document.querySelectorAll('.processed');
+            processedListings.forEach(listing => listing.classList.remove('processed'));
+        }
+
+        // Only process if on jobs page
+        if (!window.location.href.includes('/jobs/')) return;
+
         // Select all job listings with the data attribute
         const jobListings = document.querySelectorAll('[data-occludable-job-id]');
         
@@ -201,18 +221,19 @@ function initObserver() {
     }
 
     // Initial run
-    const initialJobListings = document.querySelectorAll('[data-occludable-job-id]');
-    initialJobListings.forEach(jobListing => {
-        if (!jobListing.classList.contains('processed')) {
-            removeBlockedListings();
-            addBlockButtons();
-            jobListing.classList.add('processed');
-        }
-    });
+    if (window.location.href.includes('/jobs/')) {
+        const initialJobListings = document.querySelectorAll('[data-occludable-job-id]');
+        initialJobListings.forEach(jobListing => {
+            if (!jobListing.classList.contains('processed')) {
+                removeBlockedListings();
+                addBlockButtons();
+                jobListing.classList.add('processed');
+            }
+        });
+    }
 
     // Disconnect the observer when the page unloads
     window.addEventListener('beforeunload', () => observer.disconnect());
-
 }
 
 // Check document readiness and initialize accordingly
