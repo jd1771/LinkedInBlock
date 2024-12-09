@@ -131,6 +131,7 @@ function addBlockButtons() {
                         } else {
                             blockedCompanies.add(currentCompanyName);
                             removeBlockedListings();
+                            blockButton.blur();
                         }
                     });
                 }
