@@ -52,7 +52,6 @@ function populateBlockedListings() {
                     if (chrome.runtime.lastError) {
                         console.error("Error unblocking company:", chrome.runtime.lastError);
                     } else {
-                        console.log(`${companyName} successfully unblocked.`);
                         
                         listItem.remove(); // Remove the item from the UI
 
