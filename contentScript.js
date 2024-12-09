@@ -110,30 +110,21 @@ function addBlockButtons() {
         blockButton.setAttribute("tabindex", "0");
         blockButton.innerHTML = BLOCK_BUTTON_SVG;
 
-        blockButton.addEventListener("click", () => {
+        blockButton.addEventListener("click", async () => {
             try {
-                // Get fresh company info at time of click
                 const currentCompanyElement = document.querySelector(".job-details-jobs-unified-top-card__company-name");
                 const currentCompanyLink    = currentCompanyElement?.querySelector("a")?.href;
                 const currentCompanyName    = currentCompanyElement?.textContent?.trim();
 
                 if (currentCompanyName && currentCompanyLink) {
-                    const dataToStore = {
-                        [currentCompanyName]: [
-                            currentCompanyLink,
-                            new Date().toISOString(),
-                        ],
-                    };
-
-                    chrome.storage.sync.set(dataToStore, () => {
-                        if (chrome.runtime.lastError) {
-                            console.error("Error storing data:", chrome.runtime.lastError);
-                        } else {
-                            blockedCompanies.add(currentCompanyName);
-                            removeBlockedListings();
-                            blockButton.blur();
-                        }
-                    });
+                    try {
+                        await storeBlockedCompany(currentCompanyName, currentCompanyLink);
+                        blockedCompanies.add(currentCompanyName);
+                        removeBlockedListings();
+                        blockButton.blur();
+                    } catch (storageError) {
+                        console.error("Failed to store blocked company:", storageError);
+                    }
                 }
             } catch (clickError) {
                 console.error("Error in block button click handler:", clickError);
@@ -150,20 +141,23 @@ function addBlockButtons() {
     }
 }
 
-// Load blocked companies from storage
-chrome.storage.sync.get(null, (result) => {
+// Replace the chrome.storage.sync.get call with the new utility function
+async function initialize() {
     try {
-        if (chrome.runtime.lastError) {
-            console.error("Error loading data from storage:", chrome.runtime.lastError);
-        } else {
-            Object.keys(result).forEach((companyName) => {
-                blockedCompanies.add(companyName);
-            });
-        }
-    } catch(error) {
-        console.error("Error processing storage results:", error);
+        blockedCompanies = await loadBlockedCompanies();
+    } catch (error) {
+        console.error("Error loading blocked companies:", error);
     }
-});
+}
+
+// Update the initialization
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        initialize().then(initObserver);
+    });
+} else {
+    initialize().then(initObserver);
+}
 
 // Wait for the DOM to be ready before setting up the observer
 function initObserver() {

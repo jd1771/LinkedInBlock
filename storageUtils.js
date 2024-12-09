@@ -6,7 +6,7 @@
  * Loads all blocked companies from chrome storage
  * @returns {Promise<Set>} Set of blocked company names
  */
-export async function loadBlockedCompanies() {
+async function loadBlockedCompanies() {
     return new Promise((resolve) => {
         const blockedCompanies = new Set();
         
@@ -31,7 +31,7 @@ export async function loadBlockedCompanies() {
  * @param {string} companyLink - LinkedIn URL of the company
  * @returns {Promise<void>}
  */
-export async function storeBlockedCompany(companyName, companyLink) {
+async function storeBlockedCompany(companyName, companyLink) {
     return new Promise((resolve, reject) => {
         const dataToStore = {
             [companyName]: [
