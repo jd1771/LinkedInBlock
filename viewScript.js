@@ -28,7 +28,7 @@ async function populateBlockedListings() {
     }
     
     // Iterate through blocked companies using Map entries
-    blockedCompanies.forEach(([companyLink, dateBlocked], companyName) => {
+    blockedCompanies.forEach((companyLink, companyName) => {
         const listItem = document.createElement("li");
         listItem.className = "company-item";
 
