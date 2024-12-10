@@ -4,11 +4,11 @@
 
 /**
  * Loads all blocked companies from chrome storage
- * @returns {Promise<Set>} Set of blocked company names
+ * @returns {Promise<Map>} Map of company names to their LinkedIn URLs
  */
 async function loadBlockedCompanies() {
     return new Promise((resolve) => {
-        const blockedCompanies = new Set();
+        const blockedCompanies = new Map();
         
         chrome.storage.sync.get(null, (result) => {
             if (chrome.runtime.lastError) {
@@ -17,9 +17,10 @@ async function loadBlockedCompanies() {
                 return;
             }
             
-            Object.keys(result).forEach((companyName) => {
-                blockedCompanies.add(companyName);
+            Object.entries(result).forEach(([companyName, [companyLink, dateBlocked]]) => {
+                blockedCompanies.set(companyName, companyLink);
             });
+            
             resolve(blockedCompanies);
         });
     });

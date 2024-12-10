@@ -31,7 +31,7 @@ const BLOCK_BUTTON_SVG = `
 `;
 
 // Blocked companies data structure
-let blockedCompanies = new Set();
+let blockedCompanies = new Map();
 
 /**
  * Removes blocked company listings from the view.
@@ -119,7 +119,7 @@ function addBlockButtons() {
                 if (currentCompanyName && currentCompanyLink) {
                     try {
                         await storeBlockedCompany(currentCompanyName, currentCompanyLink);
-                        blockedCompanies.add(currentCompanyName);
+                        blockedCompanies.set(currentCompanyName, currentCompanyLink);
                         removeBlockedListings();
                         blockButton.blur();
                     } catch (storageError) {
@@ -141,7 +141,7 @@ function addBlockButtons() {
     }
 }
 
-// Replace the chrome.storage.sync.get call with the new utility function
+// Retrieve blocked companies from storage.
 async function initialize() {
     try {
         blockedCompanies = await loadBlockedCompanies();
