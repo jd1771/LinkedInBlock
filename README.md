@@ -39,6 +39,10 @@ If you're tired of seeing repetitive job postings from companies you're not inte
 3. Use the interface to block/unblock companies
 4. Blocked companies' job postings will automatically be hidden from your search results
 
+## TODO
+
+1. List the number of companies blocked somewhere in the search result.
+
 ## License
 
 MIT License - feel free to use this code in your own projects.
