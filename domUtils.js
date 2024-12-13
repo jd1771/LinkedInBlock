@@ -74,3 +74,33 @@ function createBlockButton() {
 
     return blockContainer;
 }
+
+/**
+ * Creates a company list item element
+ * @param {string} companyName - Name of the company
+ * @param {string} companyLink - URL to company's LinkedIn page
+ * @param {Function} onUnblock - Callback function when company is unblocked
+ * @returns {HTMLElement} List item element for the company
+ */
+function createCompanyListItem(companyName, companyLink, onUnblock) {
+    const listItem = document.createElement("li");
+    listItem.className = "company-item";
+
+    listItem.innerHTML = `
+        <a href="${companyLink}" class="company-link" target="_blank" rel="noopener noreferrer">
+            ${companyName}
+        </a>
+        
+        <button class="unblock-btn" aria-label="Restore ${companyName}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="restore-icon">
+                <polyline points="9 1 4 6 9 11"></polyline>
+                <path d="M20 17.58A9 9 0 0 0 6.36 6.36L4 8"></path>
+            </svg>
+        </button>
+    `;
+
+    const unblockButton = listItem.querySelector(".unblock-btn");
+    unblockButton.addEventListener("click", onUnblock);
+    
+    return listItem;
+}

@@ -5,6 +5,7 @@
  * Outputs: None (directly manipulates the DOM and updates storage)
  */
 async function populateBlockedListings() {
+    
     // Show spinner and hide empty state immediately
     const spinner = document.querySelector(".spinner");
     const emptyState = document.querySelector(".empty-state");
@@ -27,26 +28,8 @@ async function populateBlockedListings() {
         return;
     }
     
-    // Iterate through blocked companies using Map entries
     blockedCompanies.forEach((companyLink, companyName) => {
-        const listItem = document.createElement("li");
-        listItem.className = "company-item";
-
-        listItem.innerHTML = `
-            <a href="${companyLink}" class="company-link" target="_blank" rel="noopener noreferrer">
-                ${companyName}
-            </a>
-            
-            <button class="unblock-btn" aria-label="Restore ${companyName}">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="restore-icon">
-                    <polyline points="9 1 4 6 9 11"></polyline>
-                    <path d="M20 17.58A9 9 0 0 0 6.36 6.36L4 8"></path>
-                </svg>
-            </button>
-        `;
-
-        const unblockButton = listItem.querySelector(".unblock-btn");
-        unblockButton.addEventListener("click", () => {
+        const listItem = createCompanyListItem(companyName, companyLink, () => {
             chrome.storage.sync.remove(companyName, () => {
                 if (chrome.runtime.lastError) {
                     console.error("Error unblocking company:", chrome.runtime.lastError);
