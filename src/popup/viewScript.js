@@ -1,8 +1,10 @@
 /**
- * Populates the blocked companies list with the companies stored in the Chrome storage.
- * 
- * Inputs: None
- * Outputs: None (directly manipulates the DOM and updates storage)
+ * Populates the list of blocked companies in the popup UI.
+ * Retrieves blocked companies from Chrome storage and creates list items for each one.
+ * Handles loading states, empty states, and unblock functionality.
+ * @function
+ * @async
+ * @returns {Promise<void>}
  */
 async function populateBlockedListings() {
     
@@ -46,7 +48,7 @@ async function populateBlockedListings() {
     });
 }
 
-// Wait for DOM to be fully loaded before running any code
+// Event listener callback that runs when the DOM is fully loaded.
 document.addEventListener('DOMContentLoaded', () => {
     // Populate the list on page load
     populateBlockedListings();

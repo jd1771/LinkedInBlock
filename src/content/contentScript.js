@@ -1,11 +1,14 @@
-// Blocked companies data structure
+/**
+ * Map storing company names that should be blocked from job listings
+ * @type {Map<string, boolean>}
+ */
 let blockedCompanies = new Map();
 
 /**
- * Removes blocked company listings from the view.
- * 
- * Inputs: None
- * Outputs: None (directly manipulates the DOM and updates storage)
+ * Removes job listings from companies that have been blocked.
+ * Searches through all job listings on the page and hides those from blocked companies.
+ * @function
+ * @returns {void}
  */
 function removeBlockedListings() {
     try {
@@ -40,10 +43,10 @@ function removeBlockedListings() {
 }
 
 /**
- * Creates and adds block buttons to the DOM.
- * 
- * Inputs: None
- * Outputs: None (directly manipulates the DOM and updates storage)
+ * Adds block buttons to job listings to allow users to block companies.
+ * Locates the appropriate container and adds a block button next to the share button.
+ * @function
+ * @returns {void}
  */
 function addBlockButtons() {
     try {
@@ -76,7 +79,12 @@ function addBlockButtons() {
     }
 }
 
-// Retrieve blocked companies from storage.
+/**
+ * Initializes the content script by loading blocked companies from storage.
+ * @function
+ * @async
+ * @returns {Promise<void>}
+ */
 async function initialize() {
     try {
         blockedCompanies = await loadBlockedCompanies();
@@ -85,16 +93,12 @@ async function initialize() {
     }
 }
 
-// Update the initialization
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        initialize().then(initObserver);
-    });
-} else {
-    initialize().then(initObserver);
-}
-
-// Wait for the DOM to be ready before setting up the observer
+/**
+ * Initializes and sets up a MutationObserver to watch for DOM changes.
+ * Handles dynamic content loading and ensures blocking functionality remains active.
+ * @function
+ * @returns {void}
+ */
 function initObserver() {
     let previousLocation = window.location.href;
 

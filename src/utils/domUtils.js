@@ -32,6 +32,7 @@ const BLOCK_BUTTON_SVG = `
 
 /**
  * Creates a block button element with associated click handler
+ * @function
  * @returns {HTMLElement} Container div with block button
  */
 function createBlockButton() {
@@ -77,6 +78,7 @@ function createBlockButton() {
 
 /**
  * Creates a company list item element
+ * @function
  * @param {string} companyName - Name of the company
  * @param {string} companyLink - URL to company's LinkedIn page
  * @param {Function} onUnblock - Callback function when company is unblocked

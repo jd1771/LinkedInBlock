@@ -4,6 +4,8 @@
 
 /**
  * Loads all blocked companies from chrome storage
+ * @function
+ * @async
  * @returns {Promise<Map>} Map of company names to their LinkedIn URLs
  */
 async function loadBlockedCompanies() {
@@ -28,6 +30,8 @@ async function loadBlockedCompanies() {
 
 /**
  * Stores a company in chrome storage
+ * @function
+ * @async
  * @param {string} companyName - Name of company to block
  * @param {string} companyLink - LinkedIn URL of the company
  * @returns {Promise<void>}
