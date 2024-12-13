@@ -9,12 +9,16 @@
     "content_scripts": [
         {
             "matches": ["https://www.linkedin.com/*"],
-            "js": ["domUtils.js", "storageUtils.js", "contentScript.js"],
+            "js": [
+                "src/utils/storageUtils.js",
+                "src/utils/domUtils.js", 
+                "src/content/contentScript.js"
+            ],
             "run_at": "document_start"
         }
     ],
 
     "action": {
-        "default_popup": "popup.html"
+        "default_popup": "src/popup/popup.html"
     }
 }
