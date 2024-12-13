@@ -9,7 +9,7 @@
     "content_scripts": [
         {
             "matches": ["https://www.linkedin.com/*"],
-            "js": ["storageUtils.js", "contentScript.js"],
+            "js": ["domUtils.js", "storageUtils.js", "contentScript.js"],
             "run_at": "document_start"
         }
     ],
