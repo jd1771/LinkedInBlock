@@ -30,10 +30,11 @@ async function populateBlockedListings() {
         return;
     }
     
+    const fragment = document.createDocumentFragment(); 
     blockedCompanies.forEach((companyLink, companyName) => {
         const listItem = createCompanyListItem(companyName, companyLink, async () => {
             try {
-                await removeBlockedCompany(companyName);
+                await removeBlockedCompany(companyName); // Assuming you've implemented this
                 listItem.remove();
                 if (!companyList.children.length) {
                     emptyState.style.display = "block";
@@ -42,9 +43,11 @@ async function populateBlockedListings() {
                 console.error("Error unblocking company:", error);
             }
         });
-        
-        companyList.appendChild(listItem);
+
+        fragment.appendChild(listItem); // Append to the fragment
     });
+
+    companyList.appendChild(fragment); // Append the fragment to the DOM
 }
 
 // Event listener callback that runs when the DOM is fully loaded.
