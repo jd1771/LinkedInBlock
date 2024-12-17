@@ -103,34 +103,39 @@ function initObserver() {
     let previousLocation = window.location.href;
 
     // Create the MutationObserver
+    let timeoutId;
     const observer = new MutationObserver((mutations) => {
-        // Check if the location has changed
-        const currentLocation = window.location.href;
-        if (currentLocation !== previousLocation) {
-            previousLocation = currentLocation;
-            
-            // Reset processed status
-            const processedListings = document.querySelectorAll('.processed');
-            processedListings.forEach(listing => listing.classList.remove('processed'));
-        }
+        clearTimeout(timeoutId);
 
-        // Only process if on jobs page
-        if (!window.location.href.includes('/jobs/')) return;
-
-        // Select all job listings with the data attribute
-        const jobListings = document.querySelectorAll('[data-occludable-job-id]');
-        
-        jobListings.forEach(jobListing => {
-            // Check if you've already processed this listing
-            if (!jobListing.classList.contains('processed')) {
+        timeoutId = setTimeout(() => {
+            // Check if the location has changed
+            const currentLocation = window.location.href;
+            if (currentLocation !== previousLocation) {
+                previousLocation = currentLocation;
                 
-                removeBlockedListings();
-                addBlockButtons();
-                
-                // Mark as processed to avoid repeated processing
-                jobListing.classList.add('processed');
+                // Reset processed status
+                const processedListings = document.querySelectorAll('.processed');
+                processedListings.forEach(listing => listing.classList.remove('processed'));
             }
-        });
+
+            // Only process if on jobs page
+            if (!window.location.href.includes('/jobs/')) return;
+
+            // Select all job listings with the data attribute
+            const jobListings = document.querySelectorAll('[data-occludable-job-id]');
+            
+            jobListings.forEach(jobListing => {
+                // Check if you've already processed this listing
+                if (!jobListing.classList.contains('processed')) {
+                    
+                    removeBlockedListings();
+                    addBlockButtons();
+                    
+                    // Mark as processed to avoid repeated processing
+                    jobListing.classList.add('processed');
+                }
+            });
+        }, 250);
     });
 
     // Observe the entire body for dynamically loaded content
