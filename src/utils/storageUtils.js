@@ -55,3 +55,23 @@ async function storeBlockedCompany(companyName, companyLink) {
         });
     });
 }
+
+/**
+ * Removes a company from chrome storage
+ * @function
+ * @async
+ * @param {string} companyName - Name of the company to remove
+ * @returns {Promise<void>}
+ */
+async function removeBlockedCompany(companyName) {
+    return new Promise((resolve, reject) => {
+        chrome.storage.sync.remove(companyName, () => {
+            if (chrome.runtime.lastError) {
+                console.error("Error removing company from storage:", chrome.runtime.lastError);
+                reject(chrome.runtime.lastError);
+                return;
+            }
+            resolve();
+        });
+    });
+}

@@ -31,17 +31,16 @@ async function populateBlockedListings() {
     }
     
     blockedCompanies.forEach((companyLink, companyName) => {
-        const listItem = createCompanyListItem(companyName, companyLink, () => {
-            chrome.storage.sync.remove(companyName, () => {
-                if (chrome.runtime.lastError) {
-                    console.error("Error unblocking company:", chrome.runtime.lastError);
-                } else {
-                    listItem.remove();
-                    if (!companyList.children.length) {
-                        emptyState.style.display = "block";
-                    }
+        const listItem = createCompanyListItem(companyName, companyLink, async () => {
+            try {
+                await removeBlockedCompany(companyName);
+                listItem.remove();
+                if (!companyList.children.length) {
+                    emptyState.style.display = "block";
                 }
-            });
+            } catch (error) {
+                console.error("Error unblocking company:", error);
+            }
         });
         
         companyList.appendChild(listItem);
