@@ -97,9 +97,13 @@ async function initialize() {
  * Initializes and sets up a MutationObserver to watch for DOM changes.
  * Handles dynamic content loading and ensures blocking functionality remains active.
  * @function
+ * @async
  * @returns {void}
  */
-function initObserver() {
+async function initObserver() {
+
+    await initialize();
+
     let previousLocation = window.location.href;
 
     // Create the MutationObserver
