@@ -75,3 +75,22 @@ async function removeBlockedCompany(companyName) {
         });
     });
 }
+
+/**
+ * Clears all blocked companies from chrome storage
+ * @function
+ * @async
+ * @returns {Promise<void>}
+ */
+async function clearBlockedCompanies() {
+    return new Promise((resolve, reject) => {
+        chrome.storage.sync.clear(() => {
+            if (chrome.runtime.lastError) {
+                console.error("Error clearing storage:", chrome.runtime.lastError);
+                reject(chrome.runtime.lastError);
+                return;
+            }
+            resolve();
+        });
+    });
+}
