@@ -6,11 +6,20 @@
  */
 async function blockCurrentCompany() {
     try {
-        const companyElement = findDetailsCompanyElement();
-        const companyLink    = companyElement?.href
-            || companyElement?.querySelector("a")?.href
-            || "";
-        const companyName    = normalizeName(companyElement?.textContent);
+        let companyName;
+        let companyLink;
+
+        if (isCompanyPage()) {
+            // On a company page the company is the page itself
+            companyName = normalizeName(document.querySelector("h1")?.textContent);
+            companyLink = window.location.origin + window.location.pathname.split("/").slice(0, 3).join("/") + "/";
+        } else {
+            const companyElement = findDetailsCompanyElement();
+            companyLink = companyElement?.href
+                || companyElement?.querySelector("a")?.href
+                || "";
+            companyName = normalizeName(companyElement?.textContent);
+        }
 
         if (!companyName) return;
 

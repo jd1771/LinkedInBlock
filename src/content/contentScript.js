@@ -56,6 +56,40 @@ function isJobsPage() {
     return window.location.pathname.startsWith("/jobs");
 }
 
+function isCompanyPage() {
+    return /^\/company\/(?!setup)/.test(window.location.pathname);
+}
+
+/**
+ * Text directly inside an element, ignoring child elements (e.g. a button
+ * that holds an icon and a text node).
+ * @param {Element} el
+ * @returns {string}
+ */
+function ownText(el) {
+    return normalizeName(
+        Array.from(el.childNodes)
+            .filter((node) => node.nodeType === Node.TEXT_NODE)
+            .map((node) => node.nodeValue)
+            .join(" ")
+    );
+}
+
+/**
+ * Closes whichever "..." menu is open.
+ */
+function closeOpenMenu() {
+    const trigger = document.querySelector(
+        "button[aria-label='More options'][aria-expanded='true'], .org-overflow-menu__dropdown-trigger[aria-expanded='true']"
+    );
+    if (trigger) {
+        trigger.click();
+        return;
+    }
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", code: "Escape", keyCode: 27, bubbles: true }));
+    document.body.click();
+}
+
 /**
  * Walks up from a job card to the outermost wrapper that holds only that card,
  * so hiding it removes the whole row (border, padding) and not just the inside.
@@ -150,25 +184,34 @@ function findDetailsCompanyElement() {
  */
 function addBlockMenuItem() {
     try {
-        if (!isJobsPage()) return;
+        if (!isJobsPage() && !isCompanyPage()) return;
 
-        const reportText = Array.from(document.querySelectorAll("p, span, div, a, button"))
-            .find((el) => el.childElementCount === 0 && normalizeName(el.textContent) === "Report this job");
-        if (!reportText) return;
+        // "Report this job" on job pages, "Report abuse" on company pages
+        const reportLabels = ["Report this job", "Report abuse"];
+        const reportEl = Array.from(document.querySelectorAll("p, span, div, a, button"))
+            .find((el) => reportLabels.includes(ownText(el)));
+        if (!reportEl) return;
+        const reportLabel = ownText(reportEl);
 
-        const row = reportText.closest("[role='menuitem'], [role='button'], button, a, li") || reportText.parentElement;
+        const row = reportEl.closest("li, [role='menuitem'], [role='button'], button, a") || reportEl.parentElement;
         if (!row || !row.parentNode) return;
         if (row.parentNode.querySelector(".company-block-menu-item")) return;
 
         const item = row.cloneNode(true);
         item.classList.add("company-block-menu-item");
-        ["componentkey", "href", "id", "data-testid"].forEach((attr) => item.removeAttribute(attr));
-        item.removeAttribute("target");
+        ["componentkey", "href", "id", "data-testid", "target"].forEach((attr) => {
+            item.removeAttribute(attr);
+            item.querySelectorAll(`[${attr}]`).forEach((el) => el.removeAttribute(attr));
+        });
 
-        // Swap the label
-        const label = Array.from(item.querySelectorAll("p, span, div, a, button"))
-            .find((el) => el.childElementCount === 0 && normalizeName(el.textContent) === "Report this job");
-        if (label) label.textContent = "Block company";
+        // Swap the label (it may be a bare text node next to an icon)
+        const walker = document.createTreeWalker(item, NodeFilter.SHOW_TEXT);
+        while (walker.nextNode()) {
+            if (normalizeName(walker.currentNode.nodeValue) === reportLabel) {
+                walker.currentNode.nodeValue = "Block company";
+                break;
+            }
+        }
 
         // Swap the icon for a "blocked" circle, keeping the original size
         const oldIcon = item.querySelector("svg");
@@ -184,12 +227,11 @@ function addBlockMenuItem() {
             oldIcon.replaceWith(icon);
         }
 
-        item.addEventListener("click", (event) => {
+        item.addEventListener("click", async (event) => {
             event.preventDefault();
             event.stopPropagation();
-            blockCurrentCompany();
-            // Close the menu by clicking outside it
-            document.body.click();
+            await blockCurrentCompany();
+            closeOpenMenu();
         }, true);
 
         row.parentNode.insertBefore(item, row.nextSibling);
