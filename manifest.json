@@ -4,7 +4,7 @@
     "version": "1.0.0",
     "description": "Block companies from appearing in LinkedIn job searches",
 
-    "permissions": ["storage", "activeTab"],
+    "permissions": ["storage"],
 
     "content_scripts": [
         {
@@ -14,7 +14,7 @@
                 "src/utils/domUtils.js", 
                 "src/content/contentScript.js"
             ],
-            "run_at": "document_start"
+            "run_at": "document_idle"
         }
     ],
 

@@ -1,41 +1,123 @@
 /**
  * Map storing company names that should be blocked from job listings
- * @type {Map<string, boolean>}
+ * @type {Map<string, string>}
  */
 let blockedCompanies = new Map();
 
+// LinkedIn changes its markup often, so every lookup tries several selectors
+// in order and uses the first that matches.
+const JOB_CARD_SELECTOR = [
+    "[role='button'][componentkey^='job-card-component-ref-']",
+    "[data-occludable-job-id]",
+    ".job-card-container",
+    "div[data-job-id]",
+].join(", ");
+
+const DETAILS_CONTAINER_SELECTORS = [
+    ".job-details-jobs-unified-top-card__container--two-pane",
+    ".job-details-jobs-unified-top-card__container",
+    ".jobs-unified-top-card",
+    ".job-details-jobs-unified-top-card",
+    ".jobs-search__job-details--container",
+    ".jobs-details",
+];
+
+const DETAILS_COMPANY_SELECTORS = [
+    ".job-details-jobs-unified-top-card__company-name",
+    ".jobs-unified-top-card__company-name",
+    ".job-details-jobs-unified-top-card__primary-description-container a[href*='/company/']",
+    "a[href*='/company/']",
+];
+
 /**
- * Removes job listings from companies that have been blocked.
- * Searches through all job listings on the page and hides those from blocked companies.
+ * Returns the first element matching any selector, searching inside root.
+ * @param {ParentNode} root
+ * @param {string[]} selectors
+ * @returns {Element|null}
+ */
+function queryFirst(root, selectors) {
+    for (const selector of selectors) {
+        const element = root.querySelector(selector);
+        if (element) return element;
+    }
+    return null;
+}
+
+/**
+ * Collapses whitespace so names compare consistently.
+ * @param {string|null|undefined} text
+ * @returns {string}
+ */
+function normalizeName(text) {
+    return (text || "").replace(/\s+/g, " ").trim();
+}
+
+function isJobsPage() {
+    return window.location.pathname.startsWith("/jobs");
+}
+
+/**
+ * Walks up from a job card to the outermost wrapper that holds only that card,
+ * so hiding it removes the whole row (border, padding) and not just the inside.
+ * @param {Element} card
+ * @returns {Element}
+ */
+function getHideTarget(card) {
+    let target = card;
+    // Capped so a page with a single result can't make us hide the whole page
+    for (let i = 0; i < 4 && target.parentElement && target.parentElement.childElementCount === 1; i++) {
+        target = target.parentElement;
+    }
+    return target;
+}
+
+function setHidden(element, hidden) {
+    if (hidden) {
+        element.style.display = "none";
+        element.dataset.linkedinBlockHidden = "true";
+    } else {
+        element.style.display = "";
+        delete element.dataset.linkedinBlockHidden;
+    }
+}
+
+/**
+ * Shows or hides every job listing depending on the blocked company list.
+ * Listings are re-evaluated each pass, so unblocking restores them.
+ *
+ * LinkedIn's class names are obfuscated, so instead of a class for the company
+ * line this looks for any text-only element inside the card whose text is a
+ * blocked company name.
  * @function
  * @returns {void}
  */
 function removeBlockedListings() {
     try {
-        // Only run on jobs pages
-        if (!window.location.href.includes('/jobs/')) return;
+        if (!isJobsPage()) return;
 
-        // Grab all job listings
-        const jobListings = document.querySelectorAll("[data-occludable-job-id]");
+        const shouldHide = new Set();
 
-        jobListings.forEach((listing) => {
-            try {
-                // Get the child div artdeco-entity-lockup__subtitle
-                const companyElement = listing.querySelector(
-                    ".artdeco-entity-lockup__subtitle"
-                );
+        document.querySelectorAll(JOB_CARD_SELECTOR).forEach((card) => {
+            const isBlocked = Array.from(card.querySelectorAll("p, span, div, a")).some((el) => {
+                if (el.childElementCount > 0) return false;
+                const text = normalizeName(el.textContent);
+                return text.length > 0 && text.length <= 100 && blockedCompanies.has(text);
+            });
+            if (isBlocked) shouldHide.add(getHideTarget(card));
+        });
 
-                if (companyElement) {
-                    // Get the inner text (company name)
-                    const companyName = companyElement.textContent?.trim();
+        // Restore anything we hid earlier that is no longer blocked
+        document.querySelectorAll("[data-linkedin-block-hidden]").forEach((el) => {
+            if (!shouldHide.has(el) && !el.matches("hr")) setHidden(el, false);
+        });
 
-                    if (companyName && blockedCompanies.has(companyName)) {
-                        listing.style.display = "none";
-                    }
-                }
-            } catch (listingError) {
-                console.error("Error processing individual listing:", listingError);
-            }
+        shouldHide.forEach((el) => setHidden(el, true));
+
+        // Hide the divider line that follows each hidden row (restore when none are hidden)
+        document.querySelectorAll("hr[data-linkedin-block-hidden]").forEach((hr) => setHidden(hr, false));
+        shouldHide.forEach((el) => {
+            const next = el.nextElementSibling;
+            if (next && next.tagName === "HR") setHidden(next, true);
         });
     } catch (error) {
         console.error("Error in removeBlockedListings:", error);
@@ -43,45 +125,81 @@ function removeBlockedListings() {
 }
 
 /**
- * Adds block buttons to job listings to allow users to block companies.
- * Locates the appropriate container and adds a block button next to the share button.
+ * Finds the company name element in the job details pane (right side).
+ * Tries known class names first, then falls back to the first company link on
+ * the page that is not inside a job card in the left-hand list.
+ * @returns {Element|null}
+ */
+function findDetailsCompanyElement() {
+    const isInList = (el) => el.closest(JOB_CARD_SELECTOR);
+
+    for (const selector of DETAILS_COMPANY_SELECTORS) {
+        for (const el of document.querySelectorAll(selector)) {
+            if (!isInList(el)) return el;
+        }
+    }
+    return null;
+}
+
+/**
+ * Adds a "Block company" entry to the job details "..." menu.
+ * The menu is rendered only while open, so this is called on DOM changes and
+ * clones the existing "Report this job" row so it matches LinkedIn's styling.
  * @function
  * @returns {void}
  */
-function addBlockButtons() {
+function addBlockMenuItem() {
     try {
-        // Only run on jobs pages
-        if (!window.location.href.includes('/jobs/')) return;
+        if (!isJobsPage()) return;
 
-        // Find the job details container
-        const container = document.querySelector(".job-details-jobs-unified-top-card__container--two-pane");
+        const reportText = Array.from(document.querySelectorAll("p, span, div, a, button"))
+            .find((el) => el.childElementCount === 0 && normalizeName(el.textContent) === "Report this job");
+        if (!reportText) return;
 
-        // If no container or button already exists, return
-        if (!container || container.querySelector(".company-block-btn")) return;
+        const row = reportText.closest("[role='menuitem'], [role='button'], button, a, li") || reportText.parentElement;
+        if (!row || !row.parentNode) return;
+        if (row.parentNode.querySelector(".company-block-menu-item")) return;
 
-        // Find the share button's parent div to position our block button
-        const shareContainer = container.querySelector(".artdeco-dropdown");
-        
-        if (!shareContainer) return;
+        const item = row.cloneNode(true);
+        item.classList.add("company-block-menu-item");
+        ["componentkey", "href", "id", "data-testid"].forEach((attr) => item.removeAttribute(attr));
+        item.removeAttribute("target");
 
-        // Get company info
-        const companyElement = container.querySelector(".job-details-jobs-unified-top-card__company-name");
+        // Swap the label
+        const label = Array.from(item.querySelectorAll("p, span, div, a, button"))
+            .find((el) => el.childElementCount === 0 && normalizeName(el.textContent) === "Report this job");
+        if (label) label.textContent = "Block company";
 
-        if (!companyElement) return;
+        // Swap the icon for a "blocked" circle, keeping the original size
+        const oldIcon = item.querySelector("svg");
+        if (oldIcon) {
+            const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            icon.setAttribute("viewBox", "0 0 24 24");
+            icon.setAttribute("fill", "currentColor");
+            icon.setAttribute("aria-hidden", "true");
+            icon.setAttribute("width", oldIcon.getAttribute("width") || "24");
+            icon.setAttribute("height", oldIcon.getAttribute("height") || "24");
+            icon.setAttribute("class", oldIcon.getAttribute("class") || "");
+            icon.innerHTML = '<path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 2a8 8 0 016.32 12.9L7.1 5.68A7.96 7.96 0 0112 4zm0 16a8 8 0 01-6.32-12.9L16.9 18.32A7.96 7.96 0 0112 20z"/>';
+            oldIcon.replaceWith(icon);
+        }
 
-        // Create block button container
-        const blockContainer = createBlockButton();
+        item.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            blockCurrentCompany();
+            // Close the menu by clicking outside it
+            document.body.click();
+        }, true);
 
-        // Insert after the share button container
-        shareContainer.parentNode.insertBefore(blockContainer, shareContainer.nextSibling);
+        row.parentNode.insertBefore(item, row.nextSibling);
     } catch (error) {
-        console.error("Error in addBlockButtons:", error);
+        console.error("Error in addBlockMenuItem:", error);
     }
 }
 
 /**
- * Initializes the content script by loading blocked companies from storage.
- * @function
+ * Loads blocked companies from storage.
  * @async
  * @returns {Promise<void>}
  */
@@ -93,85 +211,46 @@ async function initialize() {
     }
 }
 
-/**
- * Initializes and sets up a MutationObserver to watch for DOM changes.
- * Handles dynamic content loading and ensures blocking functionality remains active.
- * @function
- * @async
- * @returns {void}
- */
-async function initObserver() {
-
-    await initialize();
-
-    let previousLocation = window.location.href;
-
-    // Create the MutationObserver
-    let timeoutId;
-    const observer = new MutationObserver((mutations) => {
-        clearTimeout(timeoutId);
-
-        timeoutId = setTimeout(() => {
-            // Check if the location has changed
-            const currentLocation = window.location.href;
-            if (currentLocation !== previousLocation) {
-                previousLocation = currentLocation;
-                
-                // Reset processed status
-                const processedListings = document.querySelectorAll('.processed');
-                processedListings.forEach(listing => listing.classList.remove('processed'));
-            }
-
-            // Only process if on jobs page
-            if (!window.location.href.includes('/jobs/')) return;
-
-            // Select all job listings with the data attribute
-            const jobListings = document.querySelectorAll('[data-occludable-job-id]');
-            
-            jobListings.forEach(jobListing => {
-                // Check if you've already processed this listing
-                if (!jobListing.classList.contains('processed')) {
-                    
-                    removeBlockedListings();
-                    addBlockButtons();
-                    
-                    // Mark as processed to avoid repeated processing
-                    jobListing.classList.add('processed');
-                }
-            });
-        }, 250);
-    });
-
-    // Observe the entire body for dynamically loaded content
-    const targetNode = document.body;
-    
-    // Only observe if we have a valid node
-    if (targetNode) {
-        observer.observe(targetNode, {
-            childList: true,
-            subtree: true
-        });
-    }
-
-    // Initial run
-    if (window.location.href.includes('/jobs/')) {
-        const initialJobListings = document.querySelectorAll('[data-occludable-job-id]');
-        initialJobListings.forEach(jobListing => {
-            if (!jobListing.classList.contains('processed')) {
-                removeBlockedListings();
-                addBlockButtons();
-                jobListing.classList.add('processed');
-            }
-        });
-    }
-
-    // Disconnect the observer when the page unloads
-    window.addEventListener('beforeunload', () => observer.disconnect());
+function processPage() {
+    removeBlockedListings();
+    addBlockMenuItem();
 }
 
-// Check document readiness and initialize accordingly
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initObserver);
+/**
+ * Loads data, then watches the DOM so listings and the button are handled
+ * as LinkedIn loads content dynamically (it is a single-page app).
+ * @async
+ * @returns {Promise<void>}
+ */
+async function initObserver() {
+    await initialize();
+
+    let timeoutId;
+    const observer = new MutationObserver(() => {
+        // The menu appears only while open, so add our entry right away
+        requestAnimationFrame(addBlockMenuItem);
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(processPage, 250);
+    });
+
+    if (document.body) {
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    // Keep in sync when the popup unblocks a company (or another tab blocks one)
+    chrome.storage.onChanged.addListener(async (changes, area) => {
+        if (area !== "sync") return;
+        await initialize();
+        removeBlockedListings();
+    });
+
+    processPage();
+
+    window.addEventListener("beforeunload", () => observer.disconnect());
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initObserver);
 } else {
     initObserver();
 }
