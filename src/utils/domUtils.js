@@ -44,26 +44,32 @@ function createCompanyListItem(companyName, companyLink, onUnblock) {
     listItem.className = "company-item";
 
     // Name and link come from page content, so set them as text/attributes, not HTML
+    const avatar = document.createElement("span");
+    avatar.className = "company-avatar";
+    avatar.setAttribute("aria-hidden", "true");
+    avatar.textContent = (companyName.match(/[A-Za-z0-9]/) || ["?"])[0].toUpperCase();
+
     const link = document.createElement("a");
     link.className = "company-link";
     link.target = "_blank";
     link.rel = "noopener noreferrer";
     link.textContent = companyName;
+    link.title = companyName;
     if (/^https?:\/\//i.test(companyLink)) link.href = companyLink;
 
-    listItem.innerHTML = `
-        <button class="unblock-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="restore-icon">
-                <polyline points="9 1 4 6 9 11"></polyline>
-                <path d="M20 17.58A9 9 0 0 0 6.36 6.36L4 8"></path>
-            </svg>
-        </button>
+    const unblockButton = document.createElement("button");
+    unblockButton.className = "unblock-btn";
+    unblockButton.type = "button";
+    unblockButton.title = "Unblock";
+    unblockButton.setAttribute("aria-label", `Unblock ${companyName}`);
+    unblockButton.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="restore-icon">
+            <polyline points="9 1 4 6 9 11"></polyline>
+            <path d="M20 17.58A9 9 0 0 0 6.36 6.36L4 8"></path>
+        </svg>
     `;
-
-    const unblockButton = listItem.querySelector(".unblock-btn");
-    unblockButton.setAttribute("aria-label", `Restore ${companyName}`);
-    listItem.prepend(link);
     unblockButton.addEventListener("click", onUnblock);
-    
+
+    listItem.append(avatar, link, unblockButton);
     return listItem;
 }

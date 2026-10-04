@@ -1,4 +1,14 @@
 /**
+ * Updates the blocked-company count badge in the header.
+ * @param {number} count
+ */
+function updateCount(count) {
+    const badge = document.querySelector("#count-badge");
+    badge.textContent = count;
+    badge.hidden = count === 0;
+}
+
+/**
  * Populates the list of blocked companies in the popup UI.
  * Retrieves blocked companies from Chrome storage and creates list items for each one.
  * Handles loading states, empty states, and unblock functionality.
@@ -25,6 +35,8 @@ async function populateBlockedListings() {
     companyList.innerHTML = "";
 
     // Show empty state only if there are no items
+    updateCount(blockedCompanies.size);
+
     if (blockedCompanies.size === 0) {
         emptyState.style.display = "block";
         return;
@@ -36,6 +48,7 @@ async function populateBlockedListings() {
             try {
                 await removeBlockedCompany(companyName); // Assuming you've implemented this
                 listItem.remove();
+                updateCount(companyList.children.length);
                 if (!companyList.children.length) {
                     emptyState.style.display = "block";
                 }
