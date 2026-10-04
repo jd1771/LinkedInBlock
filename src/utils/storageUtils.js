@@ -19,8 +19,10 @@ async function loadBlockedCompanies() {
                 return;
             }
             
-            Object.entries(result).forEach(([companyName, [companyLink, dateBlocked]]) => {
-                blockedCompanies.set(companyName, companyLink);
+            Object.entries(result).forEach(([companyName, value]) => {
+                // Stored as [link, dateBlocked]; tolerate malformed entries
+                const companyLink = Array.isArray(value) ? value[0] : "";
+                blockedCompanies.set(companyName, companyLink || "");
             });
             
             resolve(blockedCompanies);
